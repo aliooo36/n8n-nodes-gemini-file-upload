@@ -1,45 +1,46 @@
 {
-  "name": "n8n-nodes-<...>",
+  "name": "n8n-nodes-gemini-file-upload",
   "version": "0.1.0",
-  "description": "",
-  "keywords": [
-    "n8n-community-node-package"
-  ],
+  "description": "Google Gemini file-upload chat node for n8n",
+  "keywords": ["n8n-community-node-package", "gemini", "file-upload", "chat"],
   "license": "MIT",
   "homepage": "",
   "author": {
-    "name": "",
-    "email": ""
+    "name": "Muhammad Ali",
+    "email": "NA"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/<...>/n8n-nodes-<...>.git"
+    "url": "https://github.com/aliooo36/n8n-nodes-gemini-file-upload.git"
   },
   "engines": {
     "node": ">=20.15"
   },
-  "main": "index.js",
+
+  "main": "dist/index.js",
   "scripts": {
-    "build": "npx rimraf dist && tsc && gulp build:icons",
+    "build": "rimraf dist && tsc && gulp build:icons",
     "dev": "tsc --watch",
     "format": "prettier nodes credentials --write",
     "lint": "eslint nodes credentials package.json",
     "lintfix": "eslint nodes credentials package.json --fix",
     "prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js nodes credentials package.json"
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
+
+
   "n8n": {
     "n8nNodesApiVersion": 1,
-    "credentials": [
-      "dist/credentials/ExampleCredentialsApi.credentials.js",
-      "dist/credentials/HttpBinApi.credentials.js"
-    ],
     "nodes": [
-      "dist/nodes/ExampleNode/ExampleNode.node.js",
-      "dist/nodes/HttpBin/HttpBin.node.js"
+      "dist/nodes/GeminiFileUpload/GeminiFileUpload.node.js"
+    ],
+    "credentials": [
+      "dist/credentials/GeminiApi.credentials.js"
     ]
+  },
+
+  "peerDependencies": {
+    "n8n-workflow": "*"
   },
   "devDependencies": {
     "@typescript-eslint/parser": "~8.32.0",
@@ -47,9 +48,7 @@
     "eslint-plugin-n8n-nodes-base": "^1.16.3",
     "gulp": "^5.0.0",
     "prettier": "^3.5.3",
+    "rimraf": "^6.0.1",
     "typescript": "^5.8.2"
-  },
-  "peerDependencies": {
-    "n8n-workflow": "*"
   }
 }
