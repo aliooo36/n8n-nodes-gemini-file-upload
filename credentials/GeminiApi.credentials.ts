@@ -1,4 +1,9 @@
-import type { ICredentialType, INodeProperties } from 'n8n-workflow';
+import type {
+	IAuthenticateGeneric,
+	ICredentialTestRequest,
+	ICredentialType,
+	INodeProperties,
+} from 'n8n-workflow';
 
 /**
  * Google Gemini REST API – API-key style credentials.
@@ -7,16 +12,37 @@ import type { ICredentialType, INodeProperties } from 'n8n-workflow';
  */
 export class GeminiApi implements ICredentialType {
 	name = 'geminiApi';               // must be unique package-wide
-	displayName = 'Gemini API';       // label shown in the credential UI
-	documentationUrl = '';            // add a docs link if you have one
+	displayName = 'Google Gemini API';       // label shown in the credential UI
+	documentationUrl = 'https://ai.google.dev/gemini-api/docs/quickstart';            // add a docs link if you have one
 	properties: INodeProperties[] = [
 		{
 			displayName: 'API Key',
 			name: 'apiKey',
 			type: 'string',
+			typeOptions: { password: true },
 			default: '',
-			placeholder: 'ai-xxxxx',
-			description: 'Your Gemini service API key',
+			required: true,
+			description: 'Your Google Gemini API key. This credential uses query parameter authentication (?key=YOUR_API_KEY) as required by the Gemini API.',
 		},
 	];
+
+	authenticate: IAuthenticateGeneric = {
+		type: 'generic',
+		properties: {
+			qs: {
+				key: '={{$credentials.apiKey}}',
+			},
+		},
+	};
+
+	test: ICredentialTestRequest = {
+		request: {
+			baseURL: 'https://generativelanguage.googleapis.com',
+			url: '/v1beta/models',
+			method: 'GET',
+			qs: {
+				key: '={{$credentials.apiKey}}',
+			},
+		},
+	};
 }
