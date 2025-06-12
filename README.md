@@ -105,3 +105,6 @@ The node includes comprehensive **Generation Config** options:
 **Author**: Muhammad Ali  
 **Repository**: [GitHub](https://github.com/aliooo36/n8n-nodes-gemini-file-upload)  
 **License**: MIT
+
+![image](https://github.com/user-attachments/assets/b323afb9-e28c-4785-bec8-b73c654cef0f)
+
