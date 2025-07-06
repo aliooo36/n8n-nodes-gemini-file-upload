@@ -243,6 +243,35 @@ export class GeminiFileUpload implements INodeType {
 					},
 				],
 			},
+			{
+				displayName: 'Type of Response',
+				name: 'responseType',
+				type: 'options',
+				options: [
+					{ name: 'Code Snippet', value: 'code' },
+					{ name: 'Custom', value: 'custom' },
+					{ name: 'Function Call (Structured)', value: 'function' },
+					{ name: 'JSON', value: 'json' },
+					{ name: 'Markdown', value: 'markdown' },
+					{ name: 'Persona/Tone', value: 'persona' },
+					{ name: 'Plain Text', value: 'plain' },
+					{ name: 'XML', value: 'xml' },
+				],
+				default: 'plain',
+				description: 'Format, style, or structure of the response you want from Gemini'
+			},
+			{
+				displayName: 'Response Body/Schema',
+				name: 'responseBody',
+				type: 'string',
+				default: '',
+				description: 'Template, schema, or example for the response. Used for JSON, Function Call, or Custom types.',
+				displayOptions: {
+					show: {
+						responseType: ['json', 'function', 'custom']
+					}
+				}
+			},
 		],
 	};
 
@@ -302,6 +331,8 @@ export class GeminiFileUpload implements INodeType {
 				const outputMode = this.getNodeParameter('outputMode', i, 'simple') as string;
 				const generationConfig = this.getNodeParameter('generationConfig', i, {}) as any;
 				const fileProcessingTimeout = this.getNodeParameter('fileProcessingTimeout', i, 30) as number;
+				const responseType = this.getNodeParameter('responseType', i, 'plain') as string;
+				const responseBody = this.getNodeParameter('responseBody', i, '') as string;
 
 				const binaryData = this.helpers.assertBinaryData(i, binaryPropertyName);
 				const fileBuffer = await this.helpers.getBinaryDataBuffer(i, binaryPropertyName);
@@ -405,11 +436,48 @@ export class GeminiFileUpload implements INodeType {
 					}
 				}
 
+				let promptInstruction = '';
+				switch (responseType) {
+					case 'json':
+						promptInstruction = 'Format your response as a JSON object.';
+						if (responseBody) promptInstruction += ` Use this schema: ${responseBody}`;
+						break;
+					case 'markdown':
+						promptInstruction = 'Format your response as Markdown.';
+						break;
+					case 'xml':
+						promptInstruction = 'Format your response as XML.';
+						break;
+					case 'code':
+						promptInstruction = 'Respond with a code snippet.';
+						if (responseBody) promptInstruction += ` Language: ${responseBody}`;
+						break;
+					case 'persona':
+						promptInstruction = responseBody ? `Respond in this style/tone: ${responseBody}` : 'Respond in a specific persona or tone.';
+						break;
+					case 'function':
+						promptInstruction = 'Respond with a function call object.';
+						if (responseBody) promptInstruction += ` Use this schema: ${responseBody}`;
+						break;
+					case 'custom':
+						promptInstruction = responseBody ? responseBody : '';
+						break;
+					default:
+						promptInstruction = '';
+				}
+				const finalPrompt = promptInstruction ? `${promptInstruction}\n${prompt}` : prompt;
+
+				if (responseType === 'json') {
+					processedConfig.responseMimeType = 'application/json';
+				} else if (responseType === 'plain' || responseType === 'markdown' || responseType === 'xml' || responseType === 'code' || responseType === 'persona' || responseType === 'custom') {
+					processedConfig.responseMimeType = 'text/plain';
+				}
+
 				const requestBody: any = {
 					contents: [
 						{
 							parts: [
-								{ text: prompt },
+								{ text: finalPrompt },
 								{
 									file_data: {
 										mime_type: mimeType,
@@ -462,7 +530,7 @@ export class GeminiFileUpload implements INodeType {
 						fileName: binaryData.fileName || 'uploaded-file',
 						mimeType,
 						fileSize: numBytes,
-						prompt,
+						prompt: finalPrompt,
 						model,
 						tokenCount,
 						generationConfig: processedConfig,
